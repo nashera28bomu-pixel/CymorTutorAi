@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tutor — Cymor Tutor</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="cymor-nav-root"></div>
+  <div class="page-content" style="padding-bottom: 140px;">
+    <div id="empty-state" class="empty-state">
+      <div class="empty-state-icon">🤖</div>
+      <p>Ask Cymor anything about what you're studying.</p>
+    </div>
+    <div class="chat-scroll" id="chat-scroll"></div>
+  </div>
+</div>
+
+<div class="chat-input-bar">
+  <textarea id="chat-input" rows="1" placeholder="Ask Cymor anything…"></textarea>
+  <button class="chat-send-btn" id="chat-send-btn" aria-label="Send">➤</button>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api/client.js"></script>
+<script src="../js/state/store.js"></script>
+<script src="../js/services/auth.js"></script>
+<script src="../js/components/nav.js"></script>
+<script src="chat.js"></script>
+</body>
+</html>

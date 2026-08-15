@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cymor Tutor AI — Your AI Study Partner</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#16302A" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="brand" style="justify-content:center; margin-bottom:18px;">
+      <span class="brand-mark">CT</span>
+      <span class="brand-name" style="color:#fff;">Cymor Tutor</span>
+    </div>
+    <h1>Your AI Study Partner, built for CBC learners.</h1>
+    <p>Ask questions, upload your notes, get quizzes and flashcards — Cymor Tutor explains things the way a great teacher would, in a way built for Kenya's CBC/CBE curriculum.</p>
+    <div class="hero-cta">
+      <a href="pages/register.html" class="btn btn-gold">Get started free</a>
+      <a href="pages/login.html" class="btn btn-ghost" style="color:#fff; border-color:rgba(255,255,255,0.4);">I have an account</a>
+    </div>
+  </div>
+</section>
+
+<div class="feature-row">
+  <div class="feature-item">
+    <div class="feature-icon">🧠</div>
+    <div>
+      <strong>Ask anything, learn properly</strong>
+      <p class="muted">Cymor teaches rather than just answering — with examples and a quick check for understanding.</p>
+    </div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">📄</div>
+    <div>
+      <strong>Study from your own notes</strong>
+      <p class="muted">Upload a PDF and ask questions about it — Cymor tells you clearly when it's answering from your notes vs. general knowledge.</p>
+    </div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">📝</div>
+    <div>
+      <strong>Quizzes and flashcards</strong>
+      <p class="muted">Generate practice questions and flashcards from any topic or your uploaded material.</p>
+    </div>
+  </div>
+</div>
+
+<p class="dev-credit">Built by Legendary Smiley Cymor</p>
+
+<script>
+  if (localStorage.getItem('cymor_token')) {
+    location.href = 'pages/dashboard.html';
+  }
+</script>
+</body>
+</html>

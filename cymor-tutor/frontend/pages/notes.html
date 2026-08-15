@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Notes — Cymor Tutor</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="cymor-nav-root"></div>
+  <div class="page-content">
+
+    <div id="list-view">
+      <h2>My Notes</h2>
+      <p class="muted">Upload your study material to create a Study Room.</p>
+
+      <div class="upload-drop" id="upload-drop">
+        <div style="font-size:28px;">📤</div>
+        <p><strong>Tap to upload</strong><br/>PDF or TXT, up to 15MB</p>
+        <input type="file" id="file-input" accept=".pdf,.txt" style="display:none;" />
+      </div>
+      <div id="upload-error"></div>
+
+      <div class="section-title">Your uploads</div>
+      <div class="doc-list" id="doc-list"></div>
+    </div>
+
+    <div id="room-view" style="display:none;">
+      <button class="btn btn-ghost btn-small" id="back-btn">← All notes</button>
+      <h2 id="room-title" style="margin-top:14px;"></h2>
+
+      <div class="study-actions">
+        <button class="study-action-btn" data-action="summarize">📋 Summarize</button>
+        <button class="study-action-btn" data-action="quiz">📝 Quiz Me</button>
+        <button class="study-action-btn" data-action="flashcards">🗂️ Flashcards</button>
+        <button class="study-action-btn" data-action="ask">💬 Ask My Notes</button>
+      </div>
+
+      <div id="room-output" style="margin-top:16px;"></div>
+
+      <div id="ask-panel" style="display:none; margin-top:16px;">
+        <div class="chat-scroll" id="doc-chat-scroll"></div>
+        <div class="field" style="margin-top:10px;">
+          <textarea id="doc-ask-input" placeholder="Ask about this document…"></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" id="doc-ask-btn">Ask</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api/client.js"></script>
+<script src="../js/state/store.js"></script>
+<script src="../js/services/auth.js"></script>
+<script src="../js/components/nav.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

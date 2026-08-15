@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flashcards — Cymor Tutor</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div id="cymor-nav-root"></div>
+  <div class="page-content">
+
+    <div id="setup-view">
+      <h2>Flashcards</h2>
+      <p class="muted">Generate flashcards for any topic.</p>
+
+      <div id="setup-error"></div>
+      <div class="field">
+        <label>Subject</label>
+        <input type="text" id="subject-input" placeholder="e.g. Mathematics" />
+      </div>
+      <div class="field">
+        <label>Topic</label>
+        <input type="text" id="topic-input" placeholder="e.g. Linear Equations" />
+      </div>
+      <div class="field">
+        <label>Number of cards</label>
+        <select id="num-input">
+          <option value="8">8</option>
+          <option value="10" selected>10</option>
+          <option value="15">15</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" id="generate-btn">Generate flashcards</button>
+    </div>
+
+    <div id="cards-view" style="display:none;">
+      <button class="btn btn-ghost btn-small" id="back-btn">← New set</button>
+      <div class="flashcard-wrap" style="margin-top:16px;">
+        <div class="flashcard" id="flashcard">
+          <div class="flashcard-face front" id="card-front"></div>
+          <div class="flashcard-face back" id="card-back"></div>
+        </div>
+      </div>
+      <div class="flashcard-nav">
+        <button class="btn btn-ghost btn-small" id="prev-btn">← Prev</button>
+        <span class="flashcard-counter" id="card-counter"></span>
+        <button class="btn btn-ghost btn-small" id="next-btn">Next →</button>
+      </div>
+      <p class="muted" style="text-align:center; margin-top:10px; font-size:13px;">Tap the card to flip it</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api/client.js"></script>
+<script src="../js/state/store.js"></script>
+<script src="../js/services/auth.js"></script>
+<script src="../js/components/nav.js"></script>
+<script src="flashcards.js"></script>
+</body>
+</html>

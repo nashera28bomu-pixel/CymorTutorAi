@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personalize your learning — Cymor Tutor</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="auth-wrap" style="max-width:480px;">
+  <h2 id="step-title">Welcome to Cymor Tutor 👋</h2>
+  <p class="muted" id="step-subtitle" style="margin-bottom:22px;">Let's personalize your learning. What level are you studying?</p>
+
+  <div id="error-box"></div>
+
+  <div id="level-step">
+    <div class="option-grid" id="level-grid">
+      <div class="option-card" data-level="Lower Primary">Lower Primary</div>
+      <div class="option-card" data-level="Upper Primary">Upper Primary</div>
+      <div class="option-card" data-level="Junior School">Junior School</div>
+      <div class="option-card" data-level="Senior School">Senior School</div>
+    </div>
+  </div>
+
+  <div id="subject-step" style="display:none;">
+    <div class="option-grid" id="subject-grid"></div>
+    <button class="btn btn-primary btn-block" id="finish-btn" style="margin-top:20px;">Start learning</button>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api/client.js"></script>
+<script src="../js/state/store.js"></script>
+<script src="onboarding.js"></script>
+</body>
+</html>
