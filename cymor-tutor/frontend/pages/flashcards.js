@@ -1,5 +1,5 @@
 if (!window.CymorStore.requireAuth()) { /* redirected */ }
-window.CymorNav.renderNav('chat');
+window.CymorNav.renderNav('quiz');
 
 let cards = [];
 let index = 0;

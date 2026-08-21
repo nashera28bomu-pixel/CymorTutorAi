@@ -34,8 +34,9 @@ async function apiRequest(path, { method = 'GET', body, isFormData = false } = {
     if (response.status === 401) {
       localStorage.removeItem('cymor_token');
       localStorage.removeItem('cymor_user');
-      if (!location.pathname.includes('login.html') && !location.pathname.includes('/index.html') && location.pathname !== '/') {
-        location.href = 'login.html';
+      const onHome = location.pathname.endsWith('index.html') || location.pathname === '/';
+      if (!onHome) {
+        location.href = location.pathname.includes('/pages/') ? '../index.html' : 'index.html';
       }
     }
     throw new Error(data.error || 'Something went wrong. Please try again.');

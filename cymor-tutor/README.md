@@ -4,20 +4,52 @@ Your AI Study Partner for Kenyan CBC/CBE learners.
 
 Developer: **Legendary Smiley Cymor**
 
-## What's built (v1)
+## What's built (v2 — chat-first rewrite)
 
-- Cymor Tutor chat (Gemini-powered, structured teaching-style answers), **grounded in real ingested
-  KICD curriculum content** when relevant to the question - see "Real curriculum data" below
-- Mathematics mode (step-by-step working, checks the learner's own working)
+- **Chat is home.** Opening the link lands directly in the chat — no landing page, no forced signup.
+- **Quick-start instead of accounts.** New learners just give a name and grade (no email/password).
+  It's still a real backend account (JWT-based) — just frictionless by default. A "💾 Save my progress"
+  option in the sidebar lets anyone later attach an email + password to recover their history on another
+  device, without losing anything from their anonymous session.
+- **Real conversation history** in a slide-out sidebar — switch between past chats, start new ones,
+  delete old ones. Backed by the same `Conversation`/`Message` models as before.
+- **Streaming responses** — replies appear token-by-token like ChatGPT/Claude via Server-Sent Events,
+  instead of a spinner followed by a wall of text.
+- **Structured, visual answers** — the model's labelled sections (🧠 Think of it this way, 🌱 Example,
+  🔑 Remember) render as distinct colour-coded callout boxes instead of plain paragraphs. The direct
+  answer always comes first; Cymor only greets the learner on the *first* message of a conversation,
+  never on every reply.
+- **Curriculum tagging** — when a reply draws on real ingested KICD content, the exact subject + grade
+  is shown as a tappable chip under the answer (tapping it asks a natural follow-up). If the learner has
+  matching uploaded notes, a "📄 you have notes on this →" chip deep-links straight into that Study Room.
+- **Practice + marking loop** — Cymor occasionally ends an answer with a "📝 Try this" practice question.
+  If the learner's next message is their attempted working, it's automatically routed to a dedicated
+  marking prompt that grades it step-by-step, explains mistakes, and advises what to focus on next —
+  rather than being treated as a brand new question.
+- **Copy button** on every AI response.
+- **Splash screen** with a percentage-loader animation and page-opening transition on first open per
+  browser tab session.
+- Mathematics mode (step-by-step working, checks the learner's own working) — kept exactly as before.
 - PDF/TXT upload → chunking → keyword-based retrieval → "Ask My Notes"
-- Note summarization (structured revision summary, not a giant paragraph)
-- Quiz generation (from a topic or an uploaded document) with scoring - topic-based quizzes are also
-  grounded in real curriculum content when available
-- Flashcard generation (from a topic or an uploaded document), same grounding
+- Note summarization, quiz generation, flashcard generation — quizzes/flashcards from a topic are also
+  grounded in real KICD content when available (same as before)
 - CBC/CBE curriculum (levels → subjects → topics) served from the database, populated from real KICD
-  curriculum design documents, not hardcoded
-- JWT auth, per-user daily AI/quiz quotas, rate limiting, file validation
-- Mobile-first PWA frontend, vanilla HTML/CSS/JS, no build step
+  curriculum design documents
+- Per-user daily AI/quiz quotas, rate limiting (trust-proxy aware for Render), file validation
+- Mobile-first PWA frontend, vanilla HTML/CSS/JS, no build step, no frontend framework/bundler
+
+### What changed structurally
+- `frontend/index.html` is now the chat app itself (previously it was a marketing landing page).
+  `pages/login.html`, `register.html`, `onboarding.html`, and `dashboard.html` were removed — their
+  functionality is folded into the quick-start flow and sidebar on the home screen.
+- Bottom navigation is now **Chat · Notes · Quiz · Progress** (Flashcards remains reachable from Notes'
+  Study Room and isn't a separate tab, to keep the nav to four items).
+- `POST /api/auth/quick-start` is the new primary entry point. `POST /api/auth/register` /
+  `/api/auth/login` still work (for anyone who wants a traditional email account from the start), and
+  `POST /api/auth/claim` upgrades an existing anonymous account in place.
+- `POST /api/tutor/chat/stream` is a new Server-Sent-Events endpoint alongside the original
+  `POST /api/tutor/chat` (still there, non-streaming, e.g. for any future non-browser client).
+- `DELETE /api/tutor/conversations/:id` was added for the sidebar's delete action.
 
 ## Real curriculum data (KICD), not demo data
 
@@ -86,16 +118,16 @@ cymor-tutor/
 │   ├── server.js
 │   └── .env.example
 └── frontend/         flat vanilla HTML/CSS/JS, deployable as static files
-    ├── index.html            landing page
-    ├── pages/                register, login, onboarding, dashboard, chat,
-    │                         notes (PDF Study Room), quiz, flashcards, progress
+    ├── index.html            the chat app itself - this is the home screen now
+    ├── pages/                notes (PDF Study Room), quiz, flashcards, progress
     ├── css/styles.css        shared design system
     ├── js/
     │   ├── config.js         ← set your backend URL here
+    │   ├── chat-app.js        splash, quick-start, sidebar, streaming chat, rendering
     │   ├── api/client.js     fetch wrapper + auth header
     │   ├── state/store.js    localStorage session helpers
-    │   ├── services/auth.js  login/register/logout
-    │   └── components/nav.js shared top bar + bottom nav
+    │   ├── services/auth.js  quick-start/login/claim-account/logout
+    │   └── components/nav.js shared topbar (pages/) + bottom nav
     └── manifest.json
 ```
 
@@ -153,11 +185,14 @@ See `backend/.env.example` for the full list and defaults. At minimum you need:
 ## API summary
 
 ```
-POST /api/auth/register              POST /api/auth/login
-GET  /api/auth/me                    POST /api/auth/onboarding
+POST /api/auth/quick-start           (primary entry point: name + grade, no password)
+POST /api/auth/register              POST /api/auth/login   (optional traditional accounts)
+GET  /api/auth/me                    POST /api/auth/claim   (upgrade an anonymous account)
+POST /api/auth/profile               (update name/level/subjects later)
 
-POST /api/tutor/chat                 GET  /api/tutor/conversations
-GET  /api/tutor/conversations/:id
+POST /api/tutor/chat                 POST /api/tutor/chat/stream   (SSE streaming)
+GET  /api/tutor/conversations        GET  /api/tutor/conversations/:id
+DELETE /api/tutor/conversations/:id
 
 POST /api/documents/upload           GET  /api/documents
 GET  /api/documents/:id              DELETE /api/documents/:id
@@ -173,8 +208,8 @@ GET  /api/curriculum/topics?subject=<id>
 GET  /api/progress
 ```
 
-All routes except `/api/auth/register`, `/api/auth/login`, and `/api/curriculum/*` require a
-`Authorization: Bearer <token>` header.
+All routes except `/api/auth/quick-start`, `/api/auth/register`, `/api/auth/login`, and
+`/api/curriculum/*` require a `Authorization: Bearer <token>` header.
 
 ## What to build next (Phase 2 candidates, from the original spec)
 

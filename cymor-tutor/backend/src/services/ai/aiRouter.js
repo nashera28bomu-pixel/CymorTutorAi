@@ -5,8 +5,10 @@ const { summarizerSystemPrompt } = require('../../prompts/summarizer');
 const { quizSystemPrompt } = require('../../prompts/quiz');
 const { flashcardSystemPrompt } = require('../../prompts/flashcards');
 const { documentQASystemPrompt } = require('../../prompts/documentQA');
+const { markingSystemPrompt } = require('../../prompts/marking');
 
 const MATH_PATTERN = /[0-9].*[=+\-*/^]|solve|equation|simplify|factori[sz]e|calculate/i;
+const PRACTICE_MARKER = '📝 Try this:';
 
 // Determines task type, prompt template, model tier, and output size.
 // Central place to change routing logic without touching controllers.
@@ -16,23 +18,38 @@ function classify(taskTypeHint, questionText = '') {
   return 'simple_question';
 }
 
+function buildTextTask({ taskType, question, context, sourceExcerpts, extra }) {
+  const resolvedType = classify(taskType, question);
+
+  if (resolvedType === 'marking') {
+    const system = markingSystemPrompt(context);
+    const prompt = `Practice question you gave the learner:\n"""\n${extra?.previousQuestion || '(not available)'}\n"""\n\nLearner's attempted working/answer:\n"""\n${question}\n"""`;
+    return { system, prompt, maxOutputTokens: 900, complex: false, resolvedType };
+  }
+
+  if (resolvedType === 'mathematics') {
+    const system = mathSystemPrompt(context);
+    return { system, prompt: question, maxOutputTokens: 900, complex: false, resolvedType };
+  }
+
+  if (resolvedType === 'document_qa') {
+    const system = documentQASystemPrompt(context);
+    const prompt = `Note excerpts:\n"""\n${sourceExcerpts || '(no relevant excerpts found)'}\n"""\n\nLearner's question: ${question}`;
+    return { system, prompt, maxOutputTokens: 900, complex: false, resolvedType };
+  }
+
+  // simple_question / explanation (default)
+  const system = tutorSystemPrompt(context);
+  const prompt = sourceExcerpts
+    ? `Curriculum excerpts (official KICD curriculum designs):\n"""\n${sourceExcerpts}\n"""\n\n${question}`
+    : question;
+  return { system, prompt, maxOutputTokens: 800, complex: false, resolvedType: 'simple_question' };
+}
+
 async function route({ taskType, question, context, sourceExcerpts, extra }) {
   const resolvedType = classify(taskType, question);
 
   switch (resolvedType) {
-    case 'mathematics': {
-      const system = mathSystemPrompt(context);
-      const text = await gemini.generate(system, question, { maxOutputTokens: 900 });
-      return { taskType: resolvedType, text };
-    }
-
-    case 'document_qa': {
-      const system = documentQASystemPrompt(context);
-      const prompt = `Note excerpts:\n"""\n${sourceExcerpts || '(no relevant excerpts found)'}\n"""\n\nLearner's question: ${question}`;
-      const text = await gemini.generate(system, prompt, { maxOutputTokens: 900 });
-      return { taskType: resolvedType, text, usedDocument: Boolean(sourceExcerpts) };
-    }
-
     case 'summarization': {
       const system = summarizerSystemPrompt(context);
       const prompt = `Study material:\n"""\n${sourceExcerpts}\n"""`;
@@ -58,17 +75,28 @@ async function route({ taskType, question, context, sourceExcerpts, extra }) {
       return { taskType: resolvedType, text };
     }
 
-    case 'simple_question':
-    case 'explanation':
     default: {
-      const system = tutorSystemPrompt(context);
-      const prompt = sourceExcerpts
-        ? `Curriculum excerpts (official KICD curriculum designs):\n"""\n${sourceExcerpts}\n"""\n\n${question}`
-        : question;
-      const text = await gemini.generate(system, prompt, { maxOutputTokens: 800 });
-      return { taskType: 'simple_question', text, usedCurriculum: Boolean(sourceExcerpts) };
+      const built = buildTextTask({ taskType, question, context, sourceExcerpts, extra });
+      const text = await gemini.generate(built.system, built.prompt, {
+        maxOutputTokens: built.maxOutputTokens,
+        complex: built.complex
+      });
+      return { taskType: built.resolvedType, text, usedCurriculum: Boolean(sourceExcerpts) };
     }
   }
 }
 
-module.exports = { route, classify };
+// Streaming variant - only used for chat-style text tasks (simple_question,
+// mathematics, document_qa, marking), never for JSON tasks like quizzes.
+async function routeStream({ taskType, question, context, sourceExcerpts, extra }, onChunk) {
+  const built = buildTextTask({ taskType, question, context, sourceExcerpts, extra });
+  const text = await gemini.generateStream(
+    built.system,
+    built.prompt,
+    { maxOutputTokens: built.maxOutputTokens, complex: built.complex },
+    onChunk
+  );
+  return { taskType: built.resolvedType, text, usedCurriculum: Boolean(sourceExcerpts) };
+}
+
+module.exports = { route, routeStream, classify, PRACTICE_MARKER };

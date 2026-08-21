@@ -3,58 +3,115 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cymor Tutor AI — Your AI Study Partner</title>
+<title>Cymor Tutor — Your AI Study Partner</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#16302A" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-<section class="hero">
-  <div class="hero-inner">
-    <div class="brand" style="justify-content:center; margin-bottom:18px;">
-      <span class="brand-mark">CT</span>
-      <span class="brand-name" style="color:#fff;">Cymor Tutor</span>
-    </div>
-    <h1>Your AI Study Partner, built for CBC learners.</h1>
-    <p>Ask questions, upload your notes, get quizzes and flashcards — Cymor Tutor explains things the way a great teacher would, in a way built for Kenya's CBC/CBE curriculum.</p>
-    <div class="hero-cta">
-      <a href="pages/register.html" class="btn btn-gold">Get started free</a>
-      <a href="pages/login.html" class="btn btn-ghost" style="color:#fff; border-color:rgba(255,255,255,0.4);">I have an account</a>
-    </div>
-  </div>
-</section>
+<!-- Splash screen: shown once per browser tab session -->
+<div class="splash-screen" id="splash-screen">
+  <div class="splash-mark">CT</div>
+  <div class="splash-name">Cymor Tutor</div>
+  <div class="splash-progress-track"><div class="splash-progress-fill"></div></div>
+  <div class="splash-percent" id="splash-percent">0%</div>
+</div>
 
-<div class="feature-row">
-  <div class="feature-item">
-    <div class="feature-icon">🧠</div>
-    <div>
-      <strong>Ask anything, learn properly</strong>
-      <p class="muted">Cymor teaches rather than just answering — with examples and a quick check for understanding.</p>
-    </div>
+<!-- Quick-start capture: shown when there's no session yet -->
+<div class="quickstart-screen" id="quickstart-screen" style="display:none;">
+  <div class="brand" style="margin-bottom:24px;">
+    <span class="brand-mark">CT</span>
+    <span class="brand-name" style="color:var(--forest);">Cymor Tutor</span>
   </div>
-  <div class="feature-item">
-    <div class="feature-icon">📄</div>
-    <div>
-      <strong>Study from your own notes</strong>
-      <p class="muted">Upload a PDF and ask questions about it — Cymor tells you clearly when it's answering from your notes vs. general knowledge.</p>
+
+  <div id="qs-error"></div>
+
+  <div id="qs-name-step">
+    <h2>Welcome 👋</h2>
+    <p class="muted" style="margin-bottom:18px;">What should Cymor call you?</p>
+    <div class="field">
+      <input type="text" id="qs-name-input" placeholder="Your name" autocomplete="name" />
     </div>
+    <button class="btn btn-primary btn-block" id="qs-name-next">Continue</button>
   </div>
-  <div class="feature-item">
-    <div class="feature-icon">📝</div>
-    <div>
-      <strong>Quizzes and flashcards</strong>
-      <p class="muted">Generate practice questions and flashcards from any topic or your uploaded material.</p>
+
+  <div id="qs-grade-step" style="display:none;">
+    <h2 id="qs-grade-title">Nice to meet you 👋</h2>
+    <p class="muted" style="margin-bottom:18px;">What grade are you in?</p>
+    <div class="option-grid">
+      <div class="option-card" data-level="Lower Primary">Lower Primary</div>
+      <div class="option-card" data-level="Upper Primary">Upper Primary</div>
+      <div class="option-card" data-level="Junior School">Junior School</div>
+      <div class="option-card" data-level="Senior School">Senior School</div>
     </div>
   </div>
 </div>
 
-<p class="dev-credit">Built by Legendary Smiley Cymor</p>
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="brand-name" style="color:#fff;">Cymor Tutor</span>
+    <button class="sidebar-toggle" id="sidebar-close">✕</button>
+  </div>
+  <button class="sidebar-new-chat" id="sidebar-new-chat">＋ New chat</button>
+  <div class="sidebar-section-label">Recent chats</div>
+  <div class="sidebar-list" id="sidebar-list"></div>
+  <div class="sidebar-footer">
+    <button class="sidebar-footer-link" id="save-progress-link">💾 Save my progress</button>
+    <button class="sidebar-footer-link" id="sidebar-signout">🚪 Sign out</button>
+  </div>
+</div>
 
-<script>
-  if (localStorage.getItem('cymor_token')) {
-    location.href = 'pages/dashboard.html';
-  }
-</script>
+<!-- Save progress mini-modal -->
+<div id="save-progress-modal" style="display:none; position:fixed; inset:0; z-index:60; background:rgba(22,48,42,0.6); align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:360px; width:100%; background:var(--white);">
+    <h3>Save your progress</h3>
+    <p class="muted" style="font-size:13px; margin-bottom:14px;">Add an email + password so you can get back to your chats from another device.</p>
+    <div id="save-progress-error"></div>
+    <div class="field"><label>Email</label><input type="email" id="save-email" /></div>
+    <div class="field"><label>Password</label><input type="password" id="save-password" minlength="6" /></div>
+    <button class="btn btn-primary btn-block" id="save-progress-submit">Save</button>
+    <button class="btn btn-ghost btn-block" id="save-progress-cancel" style="margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- Main chat app -->
+<div class="app-shell" id="app-shell" style="display:none;">
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebar-open" style="margin-right:4px;">☰</button>
+    <a href="index.html" class="brand" style="flex:1;">
+      <span class="brand-mark">CT</span>
+      <span class="brand-name">Cymor Tutor</span>
+    </a>
+    <div class="topbar-actions">
+      <a href="pages/quiz.html" class="btn-ghost btn-small" style="text-decoration:none;">Practice</a>
+    </div>
+  </header>
+
+  <div class="page-content" style="padding-bottom: 150px;">
+    <div id="empty-state" class="empty-state">
+      <div class="empty-state-icon">🤖</div>
+      <p>Ask Cymor anything about what you're studying.</p>
+    </div>
+    <div class="chat-scroll" id="chat-scroll"></div>
+  </div>
+
+  <div id="practice-hint" class="practice-hint" style="display:none;">✍️ Try the question above, then send your working — Cymor will mark it.</div>
+  <div class="chat-input-bar" style="bottom: 0;">
+    <textarea id="chat-input" rows="1" placeholder="Ask Cymor anything…"></textarea>
+    <button class="chat-send-btn" id="chat-send-btn" aria-label="Send">➤</button>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api/client.js"></script>
+<script src="js/state/store.js"></script>
+<script src="js/services/auth.js"></script>
+<script src="js/components/nav.js"></script>
+<script src="js/chat-app.js"></script>
 </body>
 </html>

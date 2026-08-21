@@ -40,6 +40,14 @@ async function loadDocs() {
     </div>`
     )
     .join('');
+
+  // Deep-link from the chat's "you have notes on this" tag.
+  const targetDocId = sessionStorage.getItem('cymor_open_doc');
+  if (targetDocId) {
+    sessionStorage.removeItem('cymor_open_doc');
+    const target = data.documents.find((d) => d._id === targetDocId && d.status === 'ready');
+    if (target) openRoom(target._id, target.filename);
+  }
 }
 
 uploadDrop.addEventListener('click', () => fileInput.click());

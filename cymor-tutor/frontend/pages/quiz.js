@@ -1,5 +1,5 @@
 if (!window.CymorStore.requireAuth()) { /* redirected */ }
-window.CymorNav.renderNav('chat');
+window.CymorNav.renderNav('quiz');
 
 const setupView = document.getElementById('setup-view');
 const quizView = document.getElementById('quiz-view');

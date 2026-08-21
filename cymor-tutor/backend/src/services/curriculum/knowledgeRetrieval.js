@@ -10,7 +10,7 @@ const MAX_CONTEXT_CHARS = 2500;
  */
 async function retrieveCurriculumContext(question, { level, subjects } = {}) {
   if (!question || question.trim().length < 3) {
-    return { excerpts: '', chunkCount: 0, used: false };
+    return { excerpts: '', chunkCount: 0, used: false, tags: [] };
   }
 
   const filter = { $text: { $search: question } };
@@ -44,7 +44,7 @@ async function retrieveCurriculumContext(question, { level, subjects } = {}) {
   }
 
   if (!matches.length) {
-    return { excerpts: '', chunkCount: 0, used: false };
+    return { excerpts: '', chunkCount: 0, used: false, tags: [] };
   }
 
   let combined = '';
@@ -54,7 +54,19 @@ async function retrieveCurriculumContext(question, { level, subjects } = {}) {
     combined += (combined ? '\n\n---\n\n' : '') + tagged;
   }
 
-  return { excerpts: combined, chunkCount: matches.length, used: true };
+  // Dedupe subject/grade pairs so the frontend can show a clean "you're
+  // studying: X, Grade Y" tag under the answer - this is what makes the
+  // curriculum ingestion actually visible and useful to the learner.
+  const seen = new Set();
+  const tags = [];
+  for (const m of matches) {
+    const key = `${m.subject}|${m.grade}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tags.push({ subject: m.subject, grade: m.grade, educationLevel: m.educationLevel });
+  }
+
+  return { excerpts: combined, chunkCount: matches.length, used: true, tags };
 }
 
 module.exports = { retrieveCurriculumContext };

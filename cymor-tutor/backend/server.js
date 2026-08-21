@@ -18,6 +18,11 @@ const app = express();
 
 connectDB();
 
+// Render (and most PaaS hosts) sit behind a reverse proxy, so Express needs
+// to trust the X-Forwarded-For header to correctly identify client IPs -
+// this is what express-rate-limit needs to work accurately.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')

@@ -17,12 +17,16 @@ function clearSession() {
   localStorage.removeItem('cymor_user');
 }
 
+function homeUrl() {
+  return location.pathname.includes('/pages/') ? '../index.html' : 'index.html';
+}
+
 function requireAuth() {
   if (!localStorage.getItem('cymor_token')) {
-    location.href = 'login.html';
+    location.href = homeUrl();
     return false;
   }
   return true;
 }
 
-window.CymorStore = { saveSession, getUser, clearSession, requireAuth };
+window.CymorStore = { saveSession, getUser, clearSession, requireAuth, homeUrl };

@@ -7,18 +7,29 @@ async function loginUser(email, password) {
   return data.user;
 }
 
-async function registerUser(name, email, password) {
-  const data = await window.CymorAPI.apiRequest('/auth/register', {
+async function quickStartUser(name, educationLevel) {
+  const data = await window.CymorAPI.apiRequest('/auth/quick-start', {
     method: 'POST',
-    body: { name, email, password }
+    body: { name, educationLevel }
   });
   window.CymorStore.saveSession(data.token, data.user);
   return data.user;
 }
 
-function logoutUser() {
-  window.CymorStore.clearSession();
-  location.href = 'login.html';
+async function claimAccount(email, password) {
+  const data = await window.CymorAPI.apiRequest('/auth/claim', {
+    method: 'POST',
+    body: { email, password }
+  });
+  const user = window.CymorStore.getUser();
+  const updated = { ...user, ...data.user };
+  localStorage.setItem('cymor_user', JSON.stringify(updated));
+  return updated;
 }
 
-window.CymorAuth = { loginUser, registerUser, logoutUser };
+function logoutUser() {
+  window.CymorStore.clearSession();
+  location.href = window.CymorStore.homeUrl();
+}
+
+window.CymorAuth = { loginUser, quickStartUser, claimAccount, logoutUser };
