@@ -13,6 +13,7 @@ const quizRoutes = require('./src/routes/quizzes');
 const flashcardRoutes = require('./src/routes/flashcards');
 const curriculumRoutes = require('./src/routes/curriculum');
 const progressRoutes = require('./src/routes/progress');
+const examRoutes = require('./src/routes/exams');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/curriculum', curriculumRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/exams', examRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

@@ -6,21 +6,30 @@ function getToken() {
   return localStorage.getItem('cymor_token');
 }
 
-async function apiRequest(path, { method = 'GET', body, isFormData = false } = {}) {
+async function apiRequest(path, { method = 'GET', body, isFormData = false, timeoutMs = 40000 } = {}) {
   const headers = {};
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
   if (!isFormData) headers['Content-Type'] = 'application/json';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   let response;
   try {
     response = await fetch(`${API_BASE}${path}`, {
       method,
       headers,
-      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined
+      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+      signal: controller.signal
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error("This is taking longer than expected. Cymor's free server may be waking up after inactivity (can take up to a minute) — please try again.");
+    }
     throw new Error('Could not reach Cymor Tutor. Check your connection and try again.');
+  } finally {
+    clearTimeout(timeout);
   }
 
   let data = {};

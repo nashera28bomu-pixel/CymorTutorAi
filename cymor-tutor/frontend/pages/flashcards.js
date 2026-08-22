@@ -29,7 +29,7 @@ document.getElementById('generate-btn').addEventListener('click', async () => {
     };
     if (documentId) body.documentId = documentId;
 
-    const data = await window.CymorAPI.apiRequest('/flashcards/generate', { method: 'POST', body });
+    const data = await window.CymorAPI.apiRequest('/flashcards/generate', { method: 'POST', body, timeoutMs: 55000 });
     cards = data.flashcards;
     index = 0;
     document.getElementById('setup-view').style.display = 'none';

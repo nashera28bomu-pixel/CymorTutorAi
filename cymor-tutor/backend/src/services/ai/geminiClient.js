@@ -14,10 +14,12 @@ function buildUrl(model) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 }
 
+const REQUEST_TIMEOUT_MS = Number(process.env.GEMINI_REQUEST_TIMEOUT_MS) || 30000;
+
 /**
  * @param {string} systemPrompt - task-specific instructions
  * @param {string} userPrompt - the learner's question / task input
- * @param {{ complex?: boolean, jsonMode?: boolean, maxOutputTokens?: number }} options
+ * @param {{ complex?: boolean, maxOutputTokens?: number }} options
  */
 async function generate(systemPrompt, userPrompt, options = {}) {
   const model = options.complex ? MODEL_COMPLEX : MODEL_SIMPLE;
@@ -28,22 +30,37 @@ async function generate(systemPrompt, userPrompt, options = {}) {
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     generationConfig: {
       temperature: options.temperature ?? 0.6,
-      maxOutputTokens: options.maxOutputTokens || 1024,
-      ...(options.jsonMode ? { responseMimeType: 'application/json' } : {})
+      maxOutputTokens: options.maxOutputTokens || 1024
+      // Deliberately NOT setting responseMimeType here even for JSON tasks -
+      // support for it varies by model/API version, and a rejected/odd
+      // request could stall. Callers that need JSON (quiz/flashcards) rely
+      // on strong prompt instructions plus fallback parsing instead - see
+      // parseQuizJson / parseFlashcardJson in their controllers.
     }
   };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   let response;
   try {
     response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: controller.signal
     });
   } catch (networkErr) {
+    if (networkErr.name === 'AbortError') {
+      const err = new Error('The AI took too long to respond. Please try again.');
+      err.status = 504;
+      throw err;
+    }
     const err = new Error('Cymor Tutor could not reach the AI service. Please try again.');
     err.status = 502;
     throw err;
+  } finally {
+    clearTimeout(timeout);
   }
 
   if (!response.ok) {
@@ -102,18 +119,29 @@ async function generateStream(systemPrompt, userPrompt, options = {}, onChunk) {
     }
   };
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   let response;
   try {
     response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: controller.signal
     });
   } catch (networkErr) {
+    clearTimeout(timeout);
+    if (networkErr.name === 'AbortError') {
+      const err = new Error('The AI took too long to respond. Please try again.');
+      err.status = 504;
+      throw err;
+    }
     const err = new Error('Cymor Tutor could not reach the AI service. Please try again.');
     err.status = 502;
     throw err;
   }
+  clearTimeout(timeout);
 
   if (!response.ok || !response.body) {
     let bodyText = '';

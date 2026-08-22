@@ -51,6 +51,31 @@ Developer: **Legendary Smiley Cymor**
   `POST /api/tutor/chat` (still there, non-streaming, e.g. for any future non-browser client).
 - `DELETE /api/tutor/conversations/:id` was added for the sidebar's delete action.
 
+### Latest fixes (this pass)
+- **Quiz generation hanging forever**: the Gemini API call had no request timeout anywhere in the app.
+  If a request stalled (most likely on the heaviest call in the app — quiz generation, which uses the
+  complex model, 1500 output tokens, and forced JSON-style output), it just hung indefinitely with no
+  error, which is exactly what "stuck on Building your quiz…" looks like. Fixed with a real timeout
+  (`GEMINI_REQUEST_TIMEOUT_MS`, default 30s) on every Gemini call, plus a matching client-side timeout in
+  `js/api/client.js`, plus dropping `responseMimeType: 'application/json'` (support for it varies by
+  model/API version and was a plausible extra failure surface) in favor of strong prompt instructions +
+  the fallback JSON-fence-stripping parser that was already there.
+- **Answers had gotten too short**: an earlier pass over-corrected toward brevity. `prompts/tutor.js` now
+  explicitly asks for comprehensive, multi-example, multi-context answers (the direct answer still comes
+  first), `maxOutputTokens` for chat went from 800 → 1700, and it now uses the stronger model tier. The
+  markdown renderer also now supports `*`-style bullets (not just `-`), matching the fuller answer style.
+- **Essays**: a new dedicated task type (`prompts/essay.js`) detects essay-style requests and produces a
+  full exam-quality essay (title, real introduction/thesis, multiple developed body paragraphs with
+  topic sentences and examples, proper conclusion) sized to genuinely earn marks on a 20-mark question,
+  rather than being squeezed through the general chat prompt.
+- **Printable "Cymor Tutor Assessment" PDFs**: `POST /api/exams/generate` generates a full mixed-format
+  revision exam (MCQ + short-answer + optional 20-mark essay, via `prompts/examPaper.js`) and renders it
+  into a branded, printable PDF (`services/exam/examPdfBuilder.js`, using `pdfkit`) with a name/date line,
+  numbered sections, blank answer space sized to each question's marks, page numbers, and a separate
+  marking-scheme section at the end for self-marking or revision. Reachable from `pages/exam.html`, linked
+  from both the Quiz setup page and a Notes Study Room's "📄 Full Exam (PDF)" action. Since it needs an
+  auth header, the download uses a `fetch` → `blob` → object-URL flow rather than a plain link.
+
 ## Real curriculum data (KICD), not demo data
 
 `backend/scripts/knowledge-ingestion/ingestKicd.js` is a real scraper/importer that:
@@ -200,6 +225,7 @@ POST /api/documents/:id/ask          POST /api/documents/:id/summarize
 
 POST /api/quizzes/generate           POST /api/quizzes/:id/submit
 POST /api/flashcards/generate        GET  /api/flashcards
+POST /api/exams/generate             (streams a PDF, not JSON)
 
 GET  /api/curriculum/levels
 GET  /api/curriculum/subjects?level=<id>

@@ -112,6 +112,9 @@ async function handleAction(action) {
     } else if (action === 'flashcards') {
       sessionStorage.setItem('cymor_flashcard_documentId', currentDoc);
       location.href = 'flashcards.html';
+    } else if (action === 'exam') {
+      sessionStorage.setItem('cymor_exam_documentId', currentDoc);
+      location.href = 'exam.html';
     }
   } catch (err) {
     roomOutput.innerHTML = `<div class="error-banner">${err.message}</div>`;

@@ -196,7 +196,7 @@ function initChatApp() {
     html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
     html = html.replace(/^## (.*)$/gm, '<h3>$1</h3>');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/^- (.*)$/gm, '<li>$1</li>');
+    html = html.replace(/^[-*] (.*)$/gm, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`);
     html = html.replace(/\n{2,}/g, '</p><p>');
     html = html.replace(/\n/g, '<br/>');

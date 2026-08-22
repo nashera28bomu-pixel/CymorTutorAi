@@ -43,6 +43,21 @@ async function checkAndIncrementQuiz(userId) {
   return record;
 }
 
+async function checkAndIncrementExam(userId) {
+  const dailyLimit = Number(process.env.MAX_EXAM_GENERATIONS_PER_DAY) || 5;
+  const record = await getOrCreateToday(userId);
+
+  if (record.examGenerations >= dailyLimit) {
+    const err = new Error("You've reached today's free assessment-paper limit. Try again tomorrow.");
+    err.status = 429;
+    throw err;
+  }
+
+  record.examGenerations += 1;
+  await record.save();
+  return record;
+}
+
 async function incrementDocumentUpload(userId) {
   const record = await getOrCreateToday(userId);
   record.documentUploads += 1;
@@ -53,5 +68,6 @@ async function incrementDocumentUpload(userId) {
 module.exports = {
   checkAndIncrementAiRequest,
   checkAndIncrementQuiz,
+  checkAndIncrementExam,
   incrementDocumentUpload
 };

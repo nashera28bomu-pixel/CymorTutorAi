@@ -6,14 +6,17 @@ const { quizSystemPrompt } = require('../../prompts/quiz');
 const { flashcardSystemPrompt } = require('../../prompts/flashcards');
 const { documentQASystemPrompt } = require('../../prompts/documentQA');
 const { markingSystemPrompt } = require('../../prompts/marking');
+const { essaySystemPrompt } = require('../../prompts/essay');
 
 const MATH_PATTERN = /[0-9].*[=+\-*/^]|solve|equation|simplify|factori[sz]e|calculate/i;
+const ESSAY_PATTERN = /write (an|a full|a detailed)? ?essay|essay (on|about|titled|question)|compose an essay|discuss.{0,40}in (an|your) essay/i;
 const PRACTICE_MARKER = '📝 Try this:';
 
 // Determines task type, prompt template, model tier, and output size.
 // Central place to change routing logic without touching controllers.
 function classify(taskTypeHint, questionText = '') {
   if (taskTypeHint) return taskTypeHint;
+  if (ESSAY_PATTERN.test(questionText)) return 'essay';
   if (MATH_PATTERN.test(questionText)) return 'mathematics';
   return 'simple_question';
 }
@@ -25,6 +28,11 @@ function buildTextTask({ taskType, question, context, sourceExcerpts, extra }) {
     const system = markingSystemPrompt(context);
     const prompt = `Practice question you gave the learner:\n"""\n${extra?.previousQuestion || '(not available)'}\n"""\n\nLearner's attempted working/answer:\n"""\n${question}\n"""`;
     return { system, prompt, maxOutputTokens: 900, complex: false, resolvedType };
+  }
+
+  if (resolvedType === 'essay') {
+    const system = essaySystemPrompt(context);
+    return { system, prompt: question, maxOutputTokens: 2200, complex: true, resolvedType };
   }
 
   if (resolvedType === 'mathematics') {
@@ -43,7 +51,7 @@ function buildTextTask({ taskType, question, context, sourceExcerpts, extra }) {
   const prompt = sourceExcerpts
     ? `Curriculum excerpts (official KICD curriculum designs):\n"""\n${sourceExcerpts}\n"""\n\n${question}`
     : question;
-  return { system, prompt, maxOutputTokens: 800, complex: false, resolvedType: 'simple_question' };
+  return { system, prompt, maxOutputTokens: 1700, complex: true, resolvedType: 'simple_question' };
 }
 
 async function route({ taskType, question, context, sourceExcerpts, extra }) {

@@ -36,7 +36,7 @@ document.getElementById('generate-btn').addEventListener('click', async () => {
     };
     if (documentId) body.documentId = documentId;
 
-    const data = await window.CymorAPI.apiRequest('/quizzes/generate', { method: 'POST', body });
+    const data = await window.CymorAPI.apiRequest('/quizzes/generate', { method: 'POST', body, timeoutMs: 55000 });
     quizId = data.quizId;
     questions = data.questions;
     currentIndex = 0;

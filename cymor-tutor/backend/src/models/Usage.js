@@ -7,7 +7,8 @@ const usageSchema = new mongoose.Schema(
     date: { type: String, required: true }, // YYYY-MM-DD
     aiRequests: { type: Number, default: 0 },
     documentUploads: { type: Number, default: 0 },
-    quizGenerations: { type: Number, default: 0 }
+    quizGenerations: { type: Number, default: 0 },
+    examGenerations: { type: Number, default: 0 }
   },
   { timestamps: true }
 );
