@@ -10,7 +10,7 @@ function isInPagesDir() {
 function navItems() {
   const inPages = isInPagesDir();
   return [
-    { key: 'chat', href: inPages ? '../index.html' : 'index.html', icon: '🤖', label: 'Chat' },
+    { key: 'chat', href: inPages ? '../index.html' : 'index.html', icon: '💬', label: 'Chat' },
     { key: 'notes', href: inPages ? 'notes.html' : 'pages/notes.html', icon: '📄', label: 'Notes' },
     { key: 'quiz', href: inPages ? 'quiz.html' : 'pages/quiz.html', icon: '📝', label: 'Quiz' },
     { key: 'progress', href: inPages ? 'progress.html' : 'pages/progress.html', icon: '📊', label: 'Progress' }

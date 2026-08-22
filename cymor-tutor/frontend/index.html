@@ -92,14 +92,19 @@
 
   <div class="page-content" style="padding-bottom: 150px;">
     <div id="empty-state" class="empty-state">
-      <div class="empty-state-icon">🤖</div>
-      <p>Ask Cymor anything about what you're studying.</p>
+      <div class="empty-state-icon chat-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3L4 6.5V11C4 15.5 7.4 19.7 12 21C16.6 19.7 20 15.5 20 11V6.5L12 3Z" fill="#fff" fill-opacity="0.95"/>
+          <path d="M9.5 12L11 13.5L14.5 10" stroke="#16302A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p id="empty-state-message">Ask Cymor anything about what you're studying.</p>
     </div>
     <div class="chat-scroll" id="chat-scroll"></div>
   </div>
 
   <div id="practice-hint" class="practice-hint" style="display:none;">✍️ Try the question above, then send your working — Cymor will mark it.</div>
-  <div class="chat-input-bar" style="bottom: 0;">
+  <div class="chat-input-bar">
     <textarea id="chat-input" rows="1" placeholder="Ask Cymor anything…"></textarea>
     <button class="chat-send-btn" id="chat-send-btn" aria-label="Send">➤</button>
   </div>

@@ -102,6 +102,30 @@ document.getElementById('save-progress-submit').addEventListener('click', async 
 function initChatApp() {
   window.CymorNav.renderBottomNavOnly('chat');
 
+  const WELCOME_MESSAGES = [
+    "Ask Cymor anything about what you're studying.",
+    "Stuck on a topic? Let's break it down together.",
+    "What are we learning today?",
+    "Got homework? I'm here to help you actually understand it.",
+    "Ask a question and get a real explanation, not just an answer.",
+    "Ready when you are — what's on your mind?",
+    "Upload your notes or just ask — either way, let's study.",
+    "Confused about something in class? Start here.",
+    "Let's turn today's lesson into something that actually sticks."
+  ];
+
+  function setRandomWelcomeMessage() {
+    const msgEl = document.getElementById('empty-state-message');
+    if (!msgEl) return;
+    const message = WELCOME_MESSAGES[Math.floor(Math.random() * WELCOME_MESSAGES.length)];
+    msgEl.textContent = message;
+    msgEl.classList.remove('empty-state-message-fade');
+    // eslint-disable-next-line no-unused-expressions
+    void msgEl.offsetWidth; // restart the fade animation
+    msgEl.classList.add('empty-state-message-fade');
+  }
+  setRandomWelcomeMessage();
+
   const scroll = document.getElementById('chat-scroll');
   const emptyState = document.getElementById('empty-state');
   const input = document.getElementById('chat-input');
@@ -447,6 +471,7 @@ function initChatApp() {
     scroll.innerHTML = '';
     emptyState.style.display = 'block';
     practiceHint.style.display = 'none';
+    setRandomWelcomeMessage();
   }
 
   document.getElementById('sidebar-new-chat').addEventListener('click', () => {
